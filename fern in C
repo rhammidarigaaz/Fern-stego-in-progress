@@ -1,0 +1,57 @@
+/*
+http://en.wikipedia.org/wiki/Barnsley_fern
+The Barnsley fern is created with four affine transformations:
+T1(x,y) = [ 0 0   ] * [x]  with prob=0.01
+          [ 0 0.16]   [y] 
+ 
+T2(x,y) = [ 0.85 0.04] * [x] + [0  ] with prob=0.85
+          [-0.04 0.85]   [y]   [1.6]
+ 
+T3(x,y) = [ 0.2 -0.26] * [x] + [0  ] with prob=0.07
+          [ 0.23 0.22]   [y]   [1.6]
+ 
+T4(x,y) = [-0.15 0.28] * [x] + [0   ] with prob=0.07
+          [ 0.26 0.24]   [y]   [0.44]
+*/
+proc iml;
+/* 1. Each row is a 2x2 linear transformation */
+L = {0    0     0    0.16,  /* L1 */
+     0.85 0.04 -0.04 0.85,  /* L2 */
+     0.2 -0.26  0.23 0.22,  /* L3 */
+    -0.15 0.28  0.26 0.24}; /* L4 */
+ 
+/* ... and each row is a translation vector */
+B = {0 0,     /* B1 */
+     0 1.6,   /* B2 */
+     0 1.6,   /* B3 */
+     0 0.44}; /* B4 */
+/* For convenience, transpose the L and B matrices */
+L = L`; B = B`;
+ 
+/* 2. The transformations are of the form T(x) = A*x + b 
+      where A and b are chosen randomly from the columns of 
+      L and B. Specify probability of each transformation. */
+prob = {0.01 0.85 0.07 0.07};
+ 
+/* 3. iterate the discrete stochastic map */
+N = 1e5;          /* number of iterations */
+x = j(2,N);
+x[,1] = {0, 2};   /* initial point */
+ 
+do i = 2 to N;
+   call randgen(k, "Table", prob);           /* k is a number 1,2,3 or 4 */
+   x[,i] = shape(L[,k], 2)*x[,i-1] + B[,k];  /* apply transformation to x[i-1] */
+end;
+ 
+/* 4. plot the iteration history */
+y = x`;
+create IFS from y[c={"x" "y"}]; append from y; close IFS;
+quit;
+ 
+ods graphics / width=200px height=400px;
+proc sgplot data=IFS;
+  title "Barnsley Fern";
+  scatter x=x y=y / markerattrs=(size=1);
+  yaxis display=none;
+  xaxis display=none;
+run;
