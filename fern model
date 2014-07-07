@@ -1,0 +1,149 @@
+// Fern.java -- Applet class that plots a fractal fern leaf in a square 
+// window.  Uses FractWin class.  Initial coding by John Watne 1/25/1999. 
+//*********************************************************************** 
+// Version 1.00 First release version, with double-buffer animation to 
+// maintain fern image when window containing image covered and then 
+// revealed, finished 2/1/1999.  -- JAW
+import java.awt.*;
+
+public class otherguysfern extends java.applet.Applet implements Runnable 
+{ 
+   FractWin  win = new FractWin();  // The FractWin object. 
+   final int  MAXIT = 20;  // Maximum iterations to perform on point. 
+   Thread  runner;   // Thread for the program. 
+   Image workspace;  // Image of buffered area, copied to active screen 
+   Graphics offscreen; // Buffer holding image to be copied to active 
+                       //  screen 
+   final int  ARRAYSIZE = 300; // Length of window in pixels. 
+ 
+
+   public void init() 
+   { 
+      // Initialize offscreen workspace and image buffer. 
+      workspace = createImage( ARRAYSIZE, ARRAYSIZE ); 
+      offscreen = workspace.getGraphics();
+
+      // Set background of both screen and buffer. 
+      setBackground( Color.black ); 
+      offscreen.setColor( Color.black ); 
+      offscreen.fillRect( 0, 0, ARRAYSIZE, ARRAYSIZE );
+
+      // Set logical boundaries of (-5, 0) and (5, 10). 
+      win.setBoundaries( (double) -5, (double) 0, (double) 5, (double) 10 );
+
+      // Initialize colorList[] array. 
+      win.colorList[0] = Color.black; 
+      win.colorList[1] = Color.green; 
+   }  // init() 
+  
+ 
+
+   public void paint( Graphics screen ) 
+   { 
+      // Plot last point in specified color if within bounds and given a 
+      // valid color index. 
+      if ((win.inBounds( win.lastX, win.lastY )) & 
+        (win.lastColor >= 0) & (win.lastColor < win.NUMCOLORS) ) 
+      { 
+         offscreen.setColor( win.colorList[win.lastColor] ); 
+            // Plot point in specified color. 
+         offscreen.fillRect( win.lastX, win.lastY, 1, 1 ); 
+             // Plot given point using filled 1 pixel square. 
+      } // if (win.inBounds( win.lastX, win.lastY ) & ...)
+
+      // Write buffer to screen. 
+      screen.drawImage( workspace, 0, 0, this ); 
+   }  // paint() 
+  
+ 
+
+   public void start() 
+   { 
+      if (runner == null) 
+      { 
+         runner = new Thread( this ); 
+         runner.start(); 
+      } 
+   }  // start() 
+  
+ 
+
+   public void run() 
+   {
+
+      while (true) 
+      { 
+         repaint(); // Update the display.
+
+         // Temporary x and y values during iterations. 
+         double  newx; 
+         double  newy;
+
+         // Get initial x and y values, both between 0 and 1. 
+         double x = Math.random(); 
+         double y = Math.random();
+
+         for (int i = 0; i < MAXIT; i++) 
+         { 
+            double  rand_num = Math.random();
+
+            if (rand_num < 0.01) 
+            { 
+               newx = 0.0; 
+               newy = 0.16 * y; 
+               x = newx; 
+               y = newy; 
+            }  // rand_num < 0.01 
+            else 
+               if (rand_num < 0.86) 
+               { 
+                  newx = (0.85 * x) + (0.04 * y); 
+                  newy = (-0.04 * x) + (0.85 * y) + 1.6; 
+                  x = newx; 
+                  y = newy; 
+               }  // (rand_num < 0.86) 
+               else 
+                  if (rand_num < 0.93) 
+                 { 
+                     newx = (0.2 * x) - (0.26 * y); 
+                     newy = (0.23 * x) + (0.22 * y) + 1.6; 
+                     x = newx; 
+                     y = newy; 
+                  }  // (rand_num < 0.93) 
+                  else 
+                  { 
+                     newx = (-0.15 * x) + (0.28 * y); 
+                     newy = (0.26 * x) + (0.24 * y) + 0.44; 
+                     x = newx; 
+                     y = newy; 
+                  }  // (rand_num >= 0.93) 
+         }  // for (int i = 0; i < MAXIT; i++)
+
+         win.lastX = win.physX( x ); 
+         win.lastY = win.physY( y ); 
+         win.lastColor = 1; 
+         // repaint() above on next loop will take 
+         // care of actually plotting the point, if it is in the boundaries 
+         // of the window. 
+      }  // while (true) 
+   }  // run() 
+  
+ 
+
+   /*public void stop() 
+   { 
+      if (runner != null) 
+      { 
+         runner.stop(); 
+         runner = null; 
+      }  // if (runner != null) 
+   }  */ //stop() 
+  
+ 
+
+   public void update( Graphics screen ) 
+   { 
+      // Override default update -- avoids flicker? 
+      paint( screen ); 
+   }  // update() 
+}  // public class Fern
