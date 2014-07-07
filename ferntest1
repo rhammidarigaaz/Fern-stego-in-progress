@@ -1,0 +1,56 @@
+//This program generates of Barnsley fractal ferns.
+//Michael Dieterle
+//Filename: ferntest1.java
+
+import java.awt.*;
+import javax.swing;
+
+public class ferntestjava1 {
+
+    //main method
+    public static void main(String args[]) {
+
+    }
+        
+    public void paintComponent(Graphics g) {
+
+        float a[] = {0F, 0.2F, -0.15F, 0.85F},
+              b[] = {0F, -0.26F, 0.28F, 0.04F},
+              c[] = {0F, 0.23F, 0.26F, -0.04F},
+              d[] = {0.16F, 0.22F, 0.24F, 0.85F},
+              e[] = {0F, 0F, 0F, 0F},
+              f[] = {0F, 1.6F, 0.44F, 1.6F},
+              rand, NewX, NewY;
+        int Select = 0;
+        int xscale, yscale, xoffset, ScreenX, ScreenY;
+
+        Rectangle drawarea = getBounds();
+        xoffset = (int) ((2.1818F / (2.6556F + 2.1818F)) * drawarea.width);
+        xscale = (int)((drawarea.width - xoffset) / 2.6556F);
+        yscale = drawarea.height / 10;
+
+        /*Barnsley fractal has -2.1818 < x < 2.6556
+        * 0<=y<=9.95851
+        * The scale came from ScreenWidth = 2.6556 * scale + offset
+        */
+        float x = 0, y = 0;
+        g.setColor(new Color(0, 128, 0));
+            
+        for(int n = 0; n < 1000000; n++)
+        {
+            rand = (float)Math.random();//rand now is 0 <= rand < 1
+            if (rand <= 0.01F){Select = 0; rand = 10;}
+            if (rand <= 0.08F){Select = 1; rand = 10;}
+            if (rand <= 0.15F){Select = 2; rand = 10;}
+            if(rand < 1) Select = 3;
+
+            NewX = a[Select] * x + b[Select] * y + e[Select];
+            NewY = c[Select] * x + d[Select] * y + f[Select];
+            x = NewX; y = NewY;
+
+            ScreenX = (int)(x * xscale + xoffset);
+            ScreenY = (int)(y * yscale);
+            g.drawLine(ScreenX, ScreenY, ScreenX, ScreenY);
+        }
+    }
+}
