@@ -1,0 +1,16 @@
+//This is a program for the generation of Barnsley fractal ferns
+//Michael Dieterle
+//Filename: Ferntestjava2.java
+
+import java.util.Scanner;
+
+public class ferntest {
+	
+	public static void main(String args[]) {
+
+		//create first fern
+		Fern fern1 = new Fern();
+	}
+
+	class Fern
+}
